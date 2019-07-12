@@ -2,7 +2,15 @@
 # -*- coding: utf-8 -*-
 
 # Borrowed from https://github.com/kennethreitz/setup.py
-# To upload to pypi: python setup.py upload
+# To upload to pypi:
+# Don't use: python setup.py upload
+# Instead:
+# Build the distribution files
+#        python setup.py sdist bdist_wheel
+# Upload
+#        python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+# It will then prompt for username and password
+# Username does not include email
 
 import io
 import os
@@ -16,9 +24,9 @@ NAME = 'CourseZero'
 DESCRIPTION = "Tools for finding what may have been stolen from teachers."
 URL = 'https://github.com/HatakoHaterson/CourseZero'
 EMAIL = 'hatako.haterson@gmail.com'
-AUTHOR = "復讐者"
+AUTHOR = "hatakohaterson"
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.2'
+VERSION = '0.0.5'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -85,7 +93,7 @@ class UploadCommand(Command):
 
         self.status('Pushing git tags…')
         os.system('git tag v{0}'.format(about['__version__']))
-        os.system('git push --tags')
+        # os.system('git push --tags')
 
         sys.exit()
 
