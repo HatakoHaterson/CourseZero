@@ -2,15 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Borrowed from https://github.com/kennethreitz/setup.py
+
 # To upload to pypi:
 # Don't use: python setup.py upload
-# Instead:
-# Build the distribution files
-#        python setup.py sdist bdist_wheel
-# Upload
-#        python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-# It will then prompt for username and password
-# Username does not include email
+# Instead: follow instructions in Upload instructions.md
 
 import io
 import os

@@ -4,8 +4,7 @@ Created by 復讐者 on 2/15/19
 __author__ = '復讐者'
 
 import json
-from CourseZero.FileSystemTools import getSystemRoot
-from CourseZero import environment as env
+import environment as env
 
 
 def load_campus_id_data(data_json_path=env.DEFAULT_CSU_ID_FILE):

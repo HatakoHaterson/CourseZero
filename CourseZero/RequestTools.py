@@ -45,7 +45,7 @@ def get_docs_for_campuses( campus_ids: list, data_json_path=None ):
 
     for c in campus_ids:
         csu = c['name']
-        csuid = c['campus_id']
+        csuid = c['_campus_id']
         data += get_docs_for_campus(csuid, csu)
         # print( "Searching for {}".format(csu) )
         # for letter in ABCS:

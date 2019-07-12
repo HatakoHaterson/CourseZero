@@ -3,12 +3,25 @@ Created by 復讐者 on 2/15/19
 """
 __author__ = '復讐者'
 
+from CourseZero.Errors import UnsetValue
+
+
+def prop_inspector_dec(func):
+    """When class properties are retrieved, this
+    checks whether they are empty and raises an exception if so"""
+    def func_wrapper(*args, **kwargs):
+        cls_prop_name = "_{}".format(func.__name__)
+        if getattr(args[0], cls_prop_name) is None:
+            raise UnsetValue(func.__name__)
+        return func(*args, **kwargs)
+    return func_wrapper
+
 
 class DataStore( object ):
-    professor_first_name = None
-    professor_last_name = None
-    campus_name = None
-    campus_id = None
+    _professor_first_name = None
+    _professor_last_name = None
+    _campus_name = None
+    _campus_id = None
     departments = [ ]
     course_ids = []
 
@@ -19,22 +32,38 @@ class DataStore( object ):
             return v
 
     @classmethod
-    def set_professor_lname( cls, event ):
-        v = cls._parse_event( event )
-        if v is not None:
-            cls.professor_last_name = v
-
-    @classmethod
     def set_professor_fname( cls, event ):
         v = cls._parse_event( event )
         if v is not None:
-            cls.professor_first_name = v
+            cls._professor_first_name = v
+
+    @property
+    @prop_inspector_dec
+    def professor_first_name( cls ):
+        return cls._professor_first_name
+
+    @classmethod
+    def set_professor_lname( cls, event ):
+        v = cls._parse_event( event )
+        if v is not None:
+            cls._professor_last_name = v
+
+    @property
+    @prop_inspector_dec
+    def professor_last_name( cls ):
+        return cls._professor_last_name
 
     @classmethod
     def set_campus_name( cls, event ):
         v = cls._parse_event( event )
         if v is not None:
-            cls.campus_name = v
+            cls._campus_name = v
+
+    @property
+    @prop_inspector_dec
+    def campus_name( cls ):
+        return cls._campus_name
+
 
     @classmethod
     def add_course( cls, course ):
