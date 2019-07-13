@@ -40,7 +40,7 @@ def make_campus_selector( store: DataStore, campus_ids ):
             store._campus_name = v
             # look up the id and store it
             cid = list(filter(lambda x: x['name'] == v, campus_ids))
-            store._campus_id = cid[0 ][ '_campus_id' ]
+            store.campus_id = cid[0 ][ 'campus_id' ]
 
     campus_sel.observe( campus_select_handler )
     display(campus_sel)
