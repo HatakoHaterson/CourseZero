@@ -7,12 +7,21 @@ import datetime
 
 from CourseZero.Errors import UnsetValue
 
+# class classproperty(object):
+#
+#     def __init__(self, fget):
+#         self.fget = fget
+#
+#     def __get__(self, owner_self, owner_cls):
+#         return self.fget(owner_cls)
+
 
 def prop_inspector_dec( func ):
     """When class properties are retrieved, this
     checks whether they are empty and raises an exception if so"""
 
     def func_wrapper( *args, **kwargs ):
+        print(func.__name__)
         cls_prop_name = "_{}".format( func.__name__ )
         if getattr( args[ 0 ], cls_prop_name ) is None:
             raise UnsetValue( func.__name__ )
@@ -25,7 +34,7 @@ class DataStore( object ):
     _professor_first_name = None
     _professor_last_name = None
     _campus_name = None
-    campus_id = None
+    _campus_id = None
     departments = [ ]
     course_ids = [ ]
 
@@ -68,14 +77,14 @@ class DataStore( object ):
     def campus_name( cls ):
         return cls._campus_name
 
-    @property
     @prop_inspector_dec
+    @property
     def campus_id( cls ):
-        return cls.campus_id
+        return cls._campus_id
 
     @campus_id.setter
     def campus_id( cls, campus_id ):
-        cls.campus_id = campus_id
+        cls._campus_id = campus_id
 
     @classmethod
     def add_course( cls, course ):

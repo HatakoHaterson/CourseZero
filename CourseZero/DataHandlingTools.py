@@ -21,37 +21,8 @@ def parse_counts( row ):
 
 def parse_json_into_df( json_data ):
     """Parse json data into a usable dataframe
-    For now: Control which columns are kept by commenting out in to_keep
+    For now: Control which columns are kept by commenting out in JSON_FIELDS
     """
-    #     to_keep = [
-    # #         '@timestamp',
-    #      'canonical_course_id',
-    # #         'country',
-    #         'course_id',
-    #        'course_info',
-    #         'course_name',
-    #         'course_num',
-    # #         'course_pk',
-    #         'dept_acro',
-    #        'dept_id',
-    #         'dept_name',
-    #         'doc_counts', # if this isn't removed, can't dedupe
-    # #         'location',
-    #         'prof_id',
-    #        'prof_name',
-    # #         'school_aliases',
-    # #         'school_id',
-    #         'school_name',
-    # #        'subdivision',
-    #         'term',
-    #         'title',
-    #         'total_doc_count',
-    #         'type',
-    #         'url',
-    #        'verified',
-    #         'year'
-    #     ]
-
     data = [ ]
 
     for r in json_data:
