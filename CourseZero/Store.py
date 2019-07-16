@@ -33,8 +33,8 @@ def prop_inspector_dec( func ):
 class DataStore( object ):
     _professor_first_name = None
     _professor_last_name = None
-    _campus_name = None
-    _campus_id = None
+    campus_name = None
+    campus_id = None
     departments = [ ]
     course_ids = [ ]
 
@@ -70,21 +70,21 @@ class DataStore( object ):
     def set_campus_name( cls, event ):
         v = cls._parse_event( event )
         if v is not None:
-            cls._campus_name = v
+            cls.campus_name = v
 
-    @property
-    @prop_inspector_dec
-    def campus_name( cls ):
-        return cls._campus_name
+    # @property
+    # @prop_inspector_dec
+    # def campus_name( cls ):
+    #     return cls._campus_name
 
-    @prop_inspector_dec
-    @property
-    def campus_id( cls ):
-        return cls._campus_id
-
-    @campus_id.setter
-    def campus_id( cls, campus_id ):
-        cls._campus_id = campus_id
+    # @prop_inspector_dec
+    # @property
+    # def campus_id( cls ):
+    #     return cls._campus_id
+    #
+    # @campus_id.setter
+    # def campus_id( cls, campus_id ):
+    #     cls._campus_id = campus_id
 
     @classmethod
     def add_course( cls, course ):
