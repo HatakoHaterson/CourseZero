@@ -9,7 +9,7 @@ __author__ = '復讐者'
 from IPython.display import display
 from ipywidgets import widgets
 
-from CourseZero.Store import DataStore
+# from CourseZero.Store import DataStore
 
 
 # --------------------- Course selection
@@ -19,7 +19,7 @@ def make_selection_text( row ):
     return t.format( **row.to_dict() )
 
 
-def make_course_b( row ):
+def make_course_b( row, data_store):
     """Creates a button for the course defined in the row.
     Sets a handler on the button to toggle whether the course is selected
     in the data store
@@ -28,11 +28,11 @@ def make_course_b( row ):
     b = widgets.Button( description=make_selection_text( row ), button_style='primary', layout=layout )
 
     def handle( event ):
-        if row[ 'course_id' ] in DataStore.course_ids:
-            DataStore.remove_course( row[ 'course_id' ] )
+        if row[ 'course_id' ] in data_store.course_ids:
+            data_store.remove_course( row[ 'course_id' ] )
             b.button_style = 'primary'
         else:
-            DataStore.add_course( row[ 'course_id' ] )
+            data_store.add_course( row[ 'course_id' ] )
             b.button_style = 'success'
 
     b.on_click( handle )
@@ -41,16 +41,20 @@ def make_course_b( row ):
 
 # -------------------- Department selection
 
-def make_dept_b( dept ):
+def make_dept_b( dept, data_store, callback=None ):
     b = widgets.Button( description=dept, button_style='primary' )
 
     def handle( event ):
-        if dept in DataStore.departments:
-            DataStore.remove_department( dept )
+        # dept = data_store._parse_event(event)
+        if dept in data_store.selected_departments:
+            data_store.remove_department( dept )
             b.button_style = 'primary'
         else:
-            DataStore.add_department( dept )
+            data_store.add_department( dept )
             b.button_style = 'success'
+
+        if callback is not None:
+            callback(data_store)
 
     b.on_click( handle )
     return b
@@ -61,18 +65,20 @@ def split_list( a_list ):
     return a_list[ :half ], a_list[ half: ]
 
 
-def dept_selection( depts ):
+def dept_selection( data_store, callback=None ):
     """Create and display the buttons for selecting which departments
     to query"""
     buttons = [ ]
-    for dept in depts:
-        buttons.append( make_dept_b( dept ) )
+    for dept in data_store.departments:
+        buttons.append( make_dept_b( dept, data_store, callback ) )
 
     b1, b3 = split_list( buttons )
     b1, b2 = split_list( b1 )
     b3, b4 = split_list( b3 )
 
-    display( widgets.HBox( [ widgets.VBox( b1 ), widgets.VBox( b2 ), widgets.VBox( b3 ), widgets.VBox( b4 ) ] ) )
+    buttons = widgets.HBox( [ widgets.VBox( b1 ), widgets.VBox( b2 ), widgets.VBox( b3 ), widgets.VBox( b4 ) ] )
+    label = widgets.HTML(value="<h1>Select departments to search</h1>")
+    display(widgets.VBox([label, buttons]))
 
 
 # -------------------- File selection
@@ -102,17 +108,17 @@ def make_infringement_b( doc, store ):
     return b
 
 
-def get_urls( frame ):
+def get_urls( frame, data_store ):
     """Handles displaying the urls and information that has been retrieved"""
-    selected = get_by_course_id( frame, DataStore.course_ids )
+    selected = get_by_course_id( frame, data_store.course_ids )
     for i, r in selected.iterrows():
         files = get_file_links_from_course_page( r[ 'url' ] )
     return files
 
 
-def show_selected_urls( frame ):
+def show_selected_urls( frame, data_store ):
     """Handles displaying the urls and information that has been retrieved"""
-    selected = get_by_course_id( frame, DataStore.course_ids )
+    selected = get_by_course_id( frame, data_store.course_ids )
     for i, r in selected.iterrows():
         files = get_file_links_from_course_page( r[ 'url' ] )
         t = "{prof_name} ---- {dept_acro} {course_num} ----  {course_name} ----  {course_info}"

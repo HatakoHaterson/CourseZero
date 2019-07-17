@@ -6,7 +6,6 @@ __author__ = '復讐者'
 import pandas as pd
 
 import environment as env
-from CourseZero.Store import DataStore
 
 
 def parse_counts( row ):
@@ -19,7 +18,7 @@ def parse_counts( row ):
     return row
 
 
-def parse_json_into_df( json_data ):
+def parse_json_into_df( json_data, fields=env.JSON_FIELDS ):
     """Parse json data into a usable dataframe
     For now: Control which columns are kept by commenting out in JSON_FIELDS
     """
@@ -36,7 +35,7 @@ def parse_json_into_df( json_data ):
 
     data = pd.DataFrame( data )
     # Filter out unneeded columns
-    data = data[ env.JSON_FIELDS ]
+    data = data[ fields ]
     # Add the counts of each kind of document to the frame as a column
     data = data.apply( lambda r: parse_counts( r ), axis=1 )
     # Drop the counts column so can de-dupe (list isn't hashable)
@@ -58,10 +57,10 @@ def normalize_prof_name( prof_name ):
 
 
 # Frame filtration operations
-def filter_by_dept_abbrevs( frame ):
+def filter_by_dept_abbrevs( frame, dept_list ):
     """Uses the list of departments defined by the user to
     return those departments from the results frame"""
-    return frame[ frame[ 'dept_acro' ].isin( DataStore.departments ) ]
+    return frame[ frame[ 'dept_acro' ].isin( dept_list) ]
 
 
 def get_by_course_id( frame, course_ids ):

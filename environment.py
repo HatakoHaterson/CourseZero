@@ -1,6 +1,8 @@
 """
 Created by 復讐者 on 7/11/19
 """
+from CourseZero.DataStorageTools import load_campus_id_data
+
 __author__ = '復讐者'
 
 
@@ -52,7 +54,11 @@ JSON_FIELDS = [
 
 CH_BASE_URL = "https://www.coursehero.com{}"
 
+from CourseZero.Store import DataStore as DS
 
+DataStore = DS()
+DataStore.campus_ids = load_campus_id_data(DEFAULT_CSU_ID_FILE)
 
 if __name__ == '__main__':
     pass
+
