@@ -1,8 +1,11 @@
 """
 Created by 復讐者 on 2/15/19
 """
+from CourseZero.RequestTools import get_file_links_from_course_page
 
 __author__ = '復讐者'
+
+from CourseZero.DataHandlingTools import get_by_course_id, get_urls
 
 # from CourseZero.DataHandlingTools import get_departments
 # from CourseZero.DataStorageTools import load_campus_id_data
@@ -227,6 +230,18 @@ class DataStore( object ):
         returns DataFrame
         """
         return self.data[ self.data[ 'dept_acro' ].isin( self.selected_departments) ]
+
+    @property
+    def selected_courses_documents( self ):
+        """Returns dataframe with the documents """
+        return get_by_course_id( self.data, self.course_ids )
+
+    @property
+    def selected_courses_documents_urls( self ):
+        return get_urls(self.data, self.course_ids)
+        # for i, r in self.selected_courses_documents.iterrows():
+        #     files = get_file_links_from_course_page( r[ 'url' ] )
+        # return files
 
 
 class TakedownStore( object ):

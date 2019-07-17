@@ -71,8 +71,9 @@ def get_file_links_from_course_page(course_page_url):
     since this is what you need to file the request
     """
     files = []
-
-    html_content = get_content(env.CH_BASE_URL.format(course_page_url))
+    target_url = env.CH_BASE_URL.format(course_page_url)
+    # print(target_url)
+    html_content = get_content(target_url)
     soup = BeautifulSoup(html_content, 'html.parser')
 
     for j in soup.findAll('a'):
@@ -80,8 +81,9 @@ def get_file_links_from_course_page(course_page_url):
             dest = j['href']
             fnd = "/file/"
             if dest[: len(fnd)] == fnd:
-                files.append(env.CHBASE.format(dest))
+                files.append(env.CH_BASE_URL.format(dest))
         except Exception as e:
+            # print(dest, e)
             pass
 
     files = list(set(files))

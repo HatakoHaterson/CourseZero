@@ -1,6 +1,8 @@
 """
 Created by 復讐者 on 7/13/19
 """
+from CourseZero.RequestTools import get_file_links_from_course_page
+
 __author__ = '復讐者'
 
 import pandas as pd
@@ -69,6 +71,16 @@ def get_by_course_id( frame, course_ids ):
     if type( course_ids ) is not list:
         course_ids = list( course_ids )
     return frame[ frame[ 'course_id' ].isin( course_ids ) ]
+
+
+def get_urls( frame, course_ids ):
+    """Gets the links to the files for courses that the user has selected
+     """
+    selected = get_by_course_id( frame, course_ids )
+    for i, r in selected.iterrows():
+        print(r[ 'url' ])
+        files = get_file_links_from_course_page( r[ 'url' ] )
+    return files
 
 
 if __name__ == '__main__':

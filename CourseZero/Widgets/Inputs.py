@@ -19,7 +19,7 @@ def make_selection_text( row ):
     return t.format( **row.to_dict() )
 
 
-def make_course_b( row, data_store):
+def make_course_b( row, data_store, callback=None):
     """Creates a button for the course defined in the row.
     Sets a handler on the button to toggle whether the course is selected
     in the data store
@@ -34,6 +34,9 @@ def make_course_b( row, data_store):
         else:
             data_store.add_course( row[ 'course_id' ] )
             b.button_style = 'success'
+
+        if callback is not None:
+            callback(data_store)
 
     b.on_click( handle )
     return b
@@ -108,12 +111,12 @@ def make_infringement_b( doc, store ):
     return b
 
 
-def get_urls( frame, data_store ):
-    """Handles displaying the urls and information that has been retrieved"""
-    selected = get_by_course_id( frame, data_store.course_ids )
-    for i, r in selected.iterrows():
-        files = get_file_links_from_course_page( r[ 'url' ] )
-    return files
+# def get_urls( frame, data_store ):
+#     """Handles displaying the urls and information that has been retrieved"""
+#     selected = get_by_course_id( frame, data_store.course_ids )
+#     for i, r in selected.iterrows():
+#         files = get_file_links_from_course_page( r[ 'url' ] )
+#     return files
 
 
 def show_selected_urls( frame, data_store ):
