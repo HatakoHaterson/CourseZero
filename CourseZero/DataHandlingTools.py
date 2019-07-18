@@ -76,10 +76,11 @@ def get_by_course_id( frame, course_ids ):
 def get_urls( frame, course_ids ):
     """Gets the links to the files for courses that the user has selected
      """
+    files = []
     selected = get_by_course_id( frame, course_ids )
     for i, r in selected.iterrows():
-        print(r[ 'url' ])
-        files = get_file_links_from_course_page( r[ 'url' ] )
+        # print(r[ 'url' ])
+        files += get_file_links_from_course_page( r[ 'url' ] )
     return files
 
 

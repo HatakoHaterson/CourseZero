@@ -25,7 +25,8 @@ def make_course_b( row, data_store, callback=None):
     in the data store
     """
     layout = widgets.Layout( width='90%' )
-    b = widgets.Button( description=make_selection_text( row ), button_style='primary', layout=layout )
+    style = 'success' if row[ 'course_id' ] in data_store.course_ids else 'primary'
+    b = widgets.Button( description=make_selection_text( row ), button_style=style, layout=layout )
 
     def handle( event ):
         if row[ 'course_id' ] in data_store.course_ids:
@@ -45,7 +46,8 @@ def make_course_b( row, data_store, callback=None):
 # -------------------- Department selection
 
 def make_dept_b( dept, data_store, callback=None ):
-    b = widgets.Button( description=dept, button_style='primary' )
+    style = 'success' if dept in data_store.selected_departments else 'primary'
+    b = widgets.Button( description=dept, button_style=style )
 
     def handle( event ):
         # dept = data_store._parse_event(event)
@@ -89,7 +91,7 @@ def make_link( url ):
     return "<a href='{}' target='_blank'>{}</a>".format( url, url )
 
 
-def make_infringement_b( doc, store ):
+def make_infringement_b( doc, store, callback=None):
     """Creates a button for the document.
     Sets a handler on the button to toggle whether the doc is selected
     in the data store
@@ -107,8 +109,22 @@ def make_infringement_b( doc, store ):
             b.button_style = 'success'
             b.description = 'Infringing'
 
+        if callback is not None:
+            callback(store)
+
     b.on_click( handle )
     return b
+
+
+def make_html_url_list( url_list ):
+    """Creates a html list, enclosed in <ul> tags, of the infringing urls.
+     Does not format as links to facilitate copy/pasting"""
+    temp = "<li>{}</li>"
+    u = "<ul>"
+    for url in url_list:
+        u += temp.format( url )
+    u += '</ul>'
+    return u
 
 
 # def get_urls( frame, data_store ):

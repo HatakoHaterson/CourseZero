@@ -138,12 +138,25 @@ class DataStore( object ):
         """DataFrame with query results """
 
         self.campus_ids = []
+        """"""
+
         self.campus_name = None
+        """The name of the campus that we are searching"""
+
         self.campus_id = None
+        """The id of the campus that we are searching"""
+
         self.course_ids = [ ]
-        self._professor_first_name = None
-        self._professor_last_name = None
+        """The ids of courses in which the user wants to search for infinging docs"""
+
+        # self._professor_first_name = None
+        # self._professor_last_name = None
+
         self.selected_departments = []
+        """Departments selected by the user for searching"""
+
+        self.infringing_docs = []
+        """Document urls which the user has selected as infringing"""
 
     @property
     def csu_names(self):
@@ -163,25 +176,25 @@ class DataStore( object ):
             v = event[ 'new' ]
             return v
 
-    def set_professor_fname( self, event ):
-        v = self._parse_event( event )
-        if v is not None:
-            self._professor_first_name = v
+    # def set_professor_fname( self, event ):
+    #     v = self._parse_event( event )
+    #     if v is not None:
+    #         self._professor_first_name = v
+    #
+    # @property
+    # @prop_inspector_dec
+    # def professor_first_name( self ):
+    #     return self._professor_first_name
+    #
+    # def set_professor_lname( self, event ):
+    #     v = self._parse_event( event )
+    #     if v is not None:
+    #         self._professor_last_name = v
 
-    @property
-    @prop_inspector_dec
-    def professor_first_name( self ):
-        return self._professor_first_name
-
-    def set_professor_lname( self, event ):
-        v = self._parse_event( event )
-        if v is not None:
-            self._professor_last_name = v
-
-    @property
-    @prop_inspector_dec
-    def professor_last_name( cls ):
-        return cls._professor_last_name
+    # @property
+    # @prop_inspector_dec
+    # def professor_last_name( cls ):
+    #     return cls._professor_last_name
 
     # def set_campus_name( self, event ):
     #     v = self._parse_event( event )
@@ -238,18 +251,29 @@ class DataStore( object ):
 
     @property
     def selected_courses_documents_urls( self ):
+        """Returns a list of the file urls by querying the course pages
+         and harvesting all urls pointing at a file"""
         return get_urls(self.data, self.course_ids)
         # for i, r in self.selected_courses_documents.iterrows():
         #     files = get_file_links_from_course_page( r[ 'url' ] )
         # return files
 
+    def add_doc( self, url ):
+        """Add a file url to the list of allegedly infringing documents"""
+        self.infringing_docs.append( url )
+
+    def remove_doc( self, url ):
+        """Remove a file url from the list of allegedly infringing documents"""
+        idx = self.infringing_docs.index( url )
+        return self.infringing_docs.pop( idx )
+
 
 class TakedownStore( object ):
     """Stores data for creating takedown request letter"""
-    infringing_docs = [ ]
     name = None
     address = None
     email = None
+    data_store = None
 
     input_fields = [
         { 'label' : 'Your full name', 'prop': 'prof_name'},
@@ -257,11 +281,15 @@ class TakedownStore( object ):
         {'label' : 'Department', 'prop': 'department'},
         {'label': 'Street address', 'prop': 'street_address' },
         {'label' : 'City', 'prop': 'city'},
+        {'label' : 'State', 'prop': 'state'},
         {'label':'Zipcode', 'prop': 'zip'},
         {'label':'Email address', 'prop': 'email'},
         #  {'label':'', 'prop': ''}
     ]
 
+    # @property
+    # def infringing_docs( self ):
+    #
     @classmethod
     def event_handler(cls, event):
         if event[ 'type' ] == 'change' and event[ 'name' ] == 'value':
@@ -272,32 +300,37 @@ class TakedownStore( object ):
             setattr(cls, update_prop, v)
 
     @classmethod
-    def add_doc( cls, url ):
-        cls.infringing_docs.append( url )
-
-    @classmethod
-    def remove_doc( cls, url ):
-        idx = cls.infringing_docs.index( url )
-        return cls.infringing_docs.pop( idx )
+    # def add_doc( cls, url ):
+    #     cls.infringing_docs.append( url )
+    #
+    # @classmethod
+    # def remove_doc( cls, url ):
+    #     idx = cls.infringing_docs.index( url )
+    #     return cls.infringing_docs.pop( idx )
 
     @property
-    def doc_urls( cls ):
-        """Creates a html list of the infringing urls"""
-        temp = "<li>{}</li>"
-        u = "<ul>"
-        for url in cls.infringing_docs:
-            u += temp.format( url )
-        u += '</ul>'
-        return u
+    def is_ready( cls ):
+        return None not in [cls.name, cls.email, cls.address]
+
+    # @property
+    # def doc_urls( cls, infringing_docs ):
+    #     """Creates a html list of the infringing urls without
+    #     them formatted as links to facilitate copy/pasting"""
+    #     temp = "<li>{}</li>"
+    #     u = "<ul>"
+    #     for url in infringing_docs:
+    #         u += temp.format( url )
+    #     u += '</ul>'
+    #     return u
 
     @classmethod
-    def format_args( cls ):
+    def format_args( cls, infringing_docs ):
         return {
             'letter_date': datetime.date.isoformat( datetime.date.today() ),
             'name': cls.name,
             'email': cls.email,
             'address': cls.address,
-            'doc_urls': cls.doc_urls
+            'doc_urls': infringing_docs
         }
 
 
