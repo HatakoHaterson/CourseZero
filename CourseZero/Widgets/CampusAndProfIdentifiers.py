@@ -30,8 +30,8 @@ def make_campus_selector( store, callback=None ):
         options=csu_names,
         description='Campus',
         disabled=False,
-        layout=layout
-    )
+        layout=layout,
+        )
     campus_ids = store.campus_ids
 
     def campus_select_handler(event):
@@ -47,7 +47,9 @@ def make_campus_selector( store, callback=None ):
                 callback(store)
 
     campus_sel.observe( campus_select_handler )
-    display(campus_sel)
+
+    label = widgets.HTML(value="<h1>Select campus to search</h1>")
+    display(widgets.VBox([label, campus_sel]))
 
 
 if __name__ == '__main__':

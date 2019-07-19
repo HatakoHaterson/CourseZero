@@ -69,6 +69,7 @@ def get_file_links_from_course_page(course_page_url):
     """Retrieves the page that would be displayed if you went to the
     relevant page on the site, then filters out all the links to files
     since this is what you need to file the request
+    Returns a list of tuples (file name, url)
     """
     files = []
     target_url = env.CH_BASE_URL.format(course_page_url)
@@ -81,7 +82,9 @@ def get_file_links_from_course_page(course_page_url):
             dest = j['href']
             fnd = "/file/"
             if dest[: len(fnd)] == fnd:
-                files.append(env.CH_BASE_URL.format(dest))
+                if j.string is not None:
+                    files.append((j.string.strip(), env.CH_BASE_URL.format(dest)))
+            # files.append((j['string'], env.CH_BASE_URL.format(dest)))
         except Exception as e:
             # print(dest, e)
             pass

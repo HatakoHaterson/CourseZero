@@ -1,7 +1,6 @@
 """
 Created by 復讐者 on 2/15/19
 """
-from CourseZero.RequestTools import get_file_links_from_course_page
 
 __author__ = '復讐者'
 
@@ -9,9 +8,9 @@ from CourseZero.DataHandlingTools import get_by_course_id, get_urls
 
 # from CourseZero.DataHandlingTools import get_departments
 # from CourseZero.DataStorageTools import load_campus_id_data
-import datetime
 
 from CourseZero.Errors import UnsetValue
+
 
 # class classproperty(object):
 #
@@ -27,9 +26,10 @@ def warn_if_empty( func ):
 
     def func_wrapper( *args, **kwargs ):
         result = func( *args, **kwargs )
-        if result is None or len(result) == 0:
+        if result is None or len( result ) == 0:
             raise UnsetValue( func.__name__ )
         return result
+
     return func_wrapper
 
 
@@ -38,7 +38,7 @@ def prop_inspector_dec( func ):
     checks whether they are empty and raises an exception if so"""
 
     def func_wrapper( *args, **kwargs ):
-        print(func.__name__)
+        print( func.__name__ )
         cls_prop_name = "_{}".format( func.__name__ )
         if getattr( args[ 0 ], cls_prop_name ) is None:
             raise UnsetValue( func.__name__ )
@@ -129,15 +129,11 @@ class DStore( object ):
 
 class DataStore( object ):
 
-
-    def __init__(self):
-        # Load the campus ids from a file
-        # if id_file is not None:
-            # self.campus_ids = load_campus_id_data(id_file)
+    def __init__( self ):
         self.data = None
         """DataFrame with query results """
 
-        self.campus_ids = []
+        self.campus_ids = [ ]
         """"""
 
         self.campus_name = None
@@ -149,18 +145,17 @@ class DataStore( object ):
         self.course_ids = [ ]
         """The ids of courses in which the user wants to search for infinging docs"""
 
-        # self._professor_first_name = None
-        # self._professor_last_name = None
-
-        self.selected_departments = []
+        self.selected_departments = [ ]
         """Departments selected by the user for searching"""
 
-        self.infringing_docs = []
+        self._selected_course_documents = []
+
+        self.infringing_docs = [ ]
         """Document urls which the user has selected as infringing"""
 
     @property
-    def csu_names(self):
-        return [c['name'] for c in self.campus_ids]
+    def csu_names( self ):
+        return [ c[ 'name' ] for c in self.campus_ids ]
 
     @property
     def departments( self ):
@@ -169,51 +164,10 @@ class DataStore( object ):
         depts.sort()
         return depts
 
-    # return get_departments(self.data)
-
     def _parse_event( self, event ):
         if event[ 'type' ] == 'change' and event[ 'name' ] == 'value':
             v = event[ 'new' ]
             return v
-
-    # def set_professor_fname( self, event ):
-    #     v = self._parse_event( event )
-    #     if v is not None:
-    #         self._professor_first_name = v
-    #
-    # @property
-    # @prop_inspector_dec
-    # def professor_first_name( self ):
-    #     return self._professor_first_name
-    #
-    # def set_professor_lname( self, event ):
-    #     v = self._parse_event( event )
-    #     if v is not None:
-    #         self._professor_last_name = v
-
-    # @property
-    # @prop_inspector_dec
-    # def professor_last_name( cls ):
-    #     return cls._professor_last_name
-
-    # def set_campus_name( self, event ):
-    #     v = self._parse_event( event )
-    #     if v is not None:
-    #         self.campus_name = v
-
-    # @property
-    # @prop_inspector_dec
-    # def campus_name( cls ):
-    #     return cls._campus_name
-
-    # @prop_inspector_dec
-    # @property
-    # def campus_id( cls ):
-    #     return cls._campus_id
-    #
-    # @campus_id.setter
-    # def campus_id( cls, campus_id ):
-    #     cls._campus_id = campus_id
 
     def add_course( self, course ):
         self.course_ids.append( course )
@@ -242,21 +196,60 @@ class DataStore( object ):
         return those departments from the results frame
         returns DataFrame
         """
-        return self.data[ self.data[ 'dept_acro' ].isin( self.selected_departments) ]
+        return self.data[ self.data[ 'dept_acro' ].isin( self.selected_departments ) ]
 
     @property
     def selected_courses_documents( self ):
         """Returns dataframe with the documents """
         return get_by_course_id( self.data, self.course_ids )
 
+    def _get_docs_for_selected_courses( self ):
+        """This will populate _selected_course_documents with tuples
+        of the form: (course id, doc name, doc url)
+        Since we want to minimize queries to the site, it will only fire
+        if the list is empty or there's been a change in selected courses.
+        In the latter case, it will retrieve any new courses and remove any
+        that are no longer selected
+        """
+        # If we haven't yet checked the server for documents, we do so
+        if len(self._selected_course_documents) == 0:
+            self._selected_course_documents = get_urls( self.data, self.course_ids )
+        else:
+            # remove any documents for courses that have been de-selected
+            self._selected_course_documents = list( filter( lambda x: x[ 0 ] in self.course_ids, self._selected_course_documents ) )
+
+            # get documents where courses have been added
+            existing = list(set([ cid for cid, name, url in self._selected_course_documents]))
+            added = [ cid for cid in self.course_ids if cid not in existing ]
+            if len(added) > 0:
+                self._selected_course_documents += get_urls( self.data, added )
+
+
     @property
     def selected_courses_documents_urls( self ):
         """Returns a list of the file urls by querying the course pages
          and harvesting all urls pointing at a file"""
-        return get_urls(self.data, self.course_ids)
+        self._get_docs_for_selected_courses()
+        return [ url for cid, name, url in self._selected_course_documents]
+
         # for i, r in self.selected_courses_documents.iterrows():
         #     files = get_file_links_from_course_page( r[ 'url' ] )
         # return files
+
+    @property
+    def selected_courses_documents_names( self ):
+        """Returns a list of the names of the files from the selected courses
+        """
+        self._get_docs_for_selected_courses()
+        return [ name for cid, name, url in self._selected_course_documents]
+
+    @property
+    def infringing_doc_names( self ):
+        return [name for cid, name, url in self.infringing_doc_tuples]
+
+    @property
+    def infringing_doc_tuples( self ):
+        return [t for t in self._selected_course_documents if t[2] in self.infringing_docs]
 
     def add_doc( self, url ):
         """Add a file url to the list of allegedly infringing documents"""
@@ -276,14 +269,14 @@ class TakedownStore( object ):
     data_store = None
 
     input_fields = [
-        { 'label' : 'Your full name', 'prop': 'prof_name'},
-        {'label' : 'Your institution', 'prop': 'institution'},
-        {'label' : 'Department', 'prop': 'department'},
-        {'label': 'Street address', 'prop': 'street_address' },
-        {'label' : 'City', 'prop': 'city'},
-        {'label' : 'State', 'prop': 'state'},
-        {'label':'Zipcode', 'prop': 'zip'},
-        {'label':'Email address', 'prop': 'email'},
+        { 'label': 'Your full name', 'prop': 'prof_name' },
+        { 'label': 'Your institution', 'prop': 'institution' },
+        { 'label': 'Department', 'prop': 'department' },
+        { 'label': 'Street address', 'prop': 'street_address' },
+        { 'label': 'City', 'prop': 'city' },
+        { 'label': 'State', 'prop': 'state' },
+        { 'label': 'Zipcode', 'prop': 'zip' },
+        { 'label': 'Email address', 'prop': 'email' },
         #  {'label':'', 'prop': ''}
     ]
 
@@ -291,15 +284,15 @@ class TakedownStore( object ):
     # def infringing_docs( self ):
     #
     @classmethod
-    def event_handler(cls, event):
+    def event_handler( cls, event ):
         if event[ 'type' ] == 'change' and event[ 'name' ] == 'value':
             v = event[ 'new' ]
             # lookup the property from the label
-            label = getattr(event['owner'], 'description')
-            update_prop = list(filter( lambda x: x['label'] == label, cls.input_fields ) )[0]['prop']
-            setattr(cls, update_prop, v)
+            label = getattr( event[ 'owner' ], 'description' )
+            update_prop = list( filter( lambda x: x[ 'label' ] == label, cls.input_fields ) )[ 0 ][ 'prop' ]
+            setattr( cls, update_prop, v )
 
-    @classmethod
+    # @classmethod
     # def add_doc( cls, url ):
     #     cls.infringing_docs.append( url )
     #
@@ -308,9 +301,9 @@ class TakedownStore( object ):
     #     idx = cls.infringing_docs.index( url )
     #     return cls.infringing_docs.pop( idx )
 
-    @property
-    def is_ready( cls ):
-        return None not in [cls.name, cls.email, cls.address]
+    # @property
+    # def is_ready( cls ):
+    #     return None not in [cls.name, cls.email, cls.address]
 
     # @property
     # def doc_urls( cls, infringing_docs ):
@@ -322,16 +315,16 @@ class TakedownStore( object ):
     #         u += temp.format( url )
     #     u += '</ul>'
     #     return u
-
-    @classmethod
-    def format_args( cls, infringing_docs ):
-        return {
-            'letter_date': datetime.date.isoformat( datetime.date.today() ),
-            'name': cls.name,
-            'email': cls.email,
-            'address': cls.address,
-            'doc_urls': infringing_docs
-        }
+    #
+    # @classmethod
+    # def format_args( cls, infringing_docs ):
+    #     return {
+    #         'letter_date': datetime.date.isoformat( datetime.date.today() ),
+    #         'name': cls.name,
+    #         'email': cls.email,
+    #         'address': cls.address,
+    #         'doc_urls': infringing_docs
+    #     }
 
 
 if __name__ == '__main__':

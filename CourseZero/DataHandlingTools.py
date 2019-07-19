@@ -74,13 +74,20 @@ def get_by_course_id( frame, course_ids ):
 
 
 def get_urls( frame, course_ids ):
-    """Gets the links to the files for courses that the user has selected
+    """Gets the links to files which appear on the
+    course pages for courses that the user has selected
+     Returns a list of tuples: (course id, doc name, doc url)
      """
     files = []
     selected = get_by_course_id( frame, course_ids )
     for i, r in selected.iterrows():
         # print(r[ 'url' ])
-        files += get_file_links_from_course_page( r[ 'url' ] )
+        coursepage_url = r[ 'url' ]
+        fs = get_file_links_from_course_page( coursepage_url )
+        # This returned a list of tuples (doc name, doc url)
+        # We'll make a new tuple with the course id as the first
+        # item: (course id, doc name, doc url)
+        files += [ ( r['course_id'], name, url) for name, url in fs ]
     return files
 
 
